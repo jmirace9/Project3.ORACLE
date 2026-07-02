@@ -1,0 +1,1049 @@
+/* 상품 */
+CREATE TABLE SS25.TBL_PRODUCT (
+	product_code VARCHAR2(100) NOT NULL, /* 상품코드 */
+	vendor_code VARCHAR2(30) NOT NULL, /* 업체코드 */
+	scategory_code VARCHAR2(30), /* 소분류코드 */
+	event_code VARCHAR2(30), /* 행사코드 */
+	product_name VARCHAR2(50) NOT NULL, /* 상품명 */
+	barcode VARCHAR2(20) NOT NULL, /* 바코드 */
+	price NUMBER(10) NOT NULL /* 소비자가 */
+);
+
+COMMENT ON TABLE SS25.TBL_PRODUCT IS '상품';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.product_code IS '상품코드';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.vendor_code IS '업체코드';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.scategory_code IS '소분류코드';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.event_code IS '행사코드';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.product_name IS '상품명';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.barcode IS '바코드';
+
+COMMENT ON COLUMN SS25.TBL_PRODUCT.price IS '소비자가';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_PRODUCT
+	ON SS25.TBL_PRODUCT (
+		product_code ASC
+	);
+
+ALTER TABLE SS25.TBL_PRODUCT
+	ADD
+		CONSTRAINT PK_TBL_PRODUCT
+		PRIMARY KEY (
+			product_code
+		);
+
+/* 직원 */
+CREATE TABLE SS25.TBL_STAFF (
+	staff_id VARCHAR2(30) NOT NULL, /* 직원번호 */
+	staff_name VARCHAR2(20) NOT NULL, /* 직원명 */
+	phone VARCHAR2(50) NOT NULL, /* 연락처 */
+	hire_date DATE NOT NULL, /* 입사일 */
+	start_date DATE NOT NULL, /* 출근시간 */
+	end_date DATE NOT NULL, /* 퇴근시간 */
+	salary NUMBER(10) NOT NULL, /* 시급 */
+	job_code NUMBER(5) NOT NULL /* 직급코드 */
+);
+
+COMMENT ON TABLE SS25.TBL_STAFF IS '직원';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.staff_id IS '직원번호';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.staff_name IS '직원명';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.phone IS '연락처';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.hire_date IS '입사일';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.start_date IS '출근시간';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.end_date IS '퇴근시간';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.salary IS '시급';
+
+COMMENT ON COLUMN SS25.TBL_STAFF.job_code IS '직급코드';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_STAFF
+	ON SS25.TBL_STAFF (
+		staff_id ASC
+	);
+
+ALTER TABLE SS25.TBL_STAFF
+	ADD
+		CONSTRAINT PK_TBL_STAFF
+		PRIMARY KEY (
+			staff_id
+		);
+
+/* 고객 */
+CREATE TABLE SS25.TBL_CUSTOMER (
+	customer_id VARCHAR2(30) NOT NULL, /* 고객번호 */
+	customer_name VARCHAR2(20) NOT NULL, /* 고객명 */
+	phone VARCHAR2(20) NOT NULL, /* 연락처 */
+	point NUMBER(10) NOT NULL, /* 포인트 */
+	join_date DATE NOT NULL /* 가입일 */
+);
+
+COMMENT ON TABLE SS25.TBL_CUSTOMER IS '고객';
+
+COMMENT ON COLUMN SS25.TBL_CUSTOMER.customer_id IS '고객번호';
+
+COMMENT ON COLUMN SS25.TBL_CUSTOMER.customer_name IS '고객명';
+
+COMMENT ON COLUMN SS25.TBL_CUSTOMER.phone IS '연락처';
+
+COMMENT ON COLUMN SS25.TBL_CUSTOMER.point IS '포인트';
+
+COMMENT ON COLUMN SS25.TBL_CUSTOMER.join_date IS '가입일';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_CUSTOMER
+	ON SS25.TBL_CUSTOMER (
+		customer_id ASC
+	);
+
+ALTER TABLE SS25.TBL_CUSTOMER
+	ADD
+		CONSTRAINT PK_TBL_CUSTOMER
+		PRIMARY KEY (
+			customer_id
+		);
+
+/* 판매상세 */
+CREATE TABLE SS25.TBL_SALE_DETAIL (
+	sale_detail_id VARCHAR2(30) NOT NULL, /* 판매상세번호 */
+	product_code VARCHAR2(100) NOT NULL, /* 상품코드 */
+	sale_id VARCHAR2(30) NOT NULL, /* 판매번호 */
+	qty NUMBER(5) NOT NULL, /* 판매수량 */
+	price NUMBER(10) NOT NULL, /* 단가 */
+	discount_amt NUMBER(10) NOT NULL, /* 할인금액 */
+	status VARCHAR2(20) NOT NULL /* 상태 */
+);
+
+COMMENT ON TABLE SS25.TBL_SALE_DETAIL IS '판매상세';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.sale_detail_id IS '판매상세번호';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.product_code IS '상품코드';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.sale_id IS '판매번호';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.qty IS '판매수량';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.price IS '단가';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.discount_amt IS '할인금액';
+
+COMMENT ON COLUMN SS25.TBL_SALE_DETAIL.status IS '상태';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_SALE_DETAIL
+	ON SS25.TBL_SALE_DETAIL (
+		sale_detail_id ASC
+	);
+
+ALTER TABLE SS25.TBL_SALE_DETAIL
+	ADD
+		CONSTRAINT PK_TBL_SALE_DETAIL
+		PRIMARY KEY (
+			sale_detail_id
+		);
+
+/* 발주 */
+CREATE TABLE SS25.TBL_ORDER (
+	order_id VARCHAR2(30) NOT NULL, /* 발주번호 */
+	order_date DATE NOT NULL, /* 발주일시 */
+	order_status VARCHAR2(20) NOT NULL, /* 발주상태 */
+	staff_id VARCHAR2(30) NOT NULL, /* 직원번호 */
+	vendor_code VARCHAR2(30) NOT NULL /* 업체코드 */
+);
+
+COMMENT ON TABLE SS25.TBL_ORDER IS '발주';
+
+COMMENT ON COLUMN SS25.TBL_ORDER.order_id IS '발주번호';
+
+COMMENT ON COLUMN SS25.TBL_ORDER.order_date IS '발주일시';
+
+COMMENT ON COLUMN SS25.TBL_ORDER.order_status IS '발주상태';
+
+COMMENT ON COLUMN SS25.TBL_ORDER.staff_id IS '직원번호';
+
+COMMENT ON COLUMN SS25.TBL_ORDER.vendor_code IS '업체코드';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_ORDER
+	ON SS25.TBL_ORDER (
+		order_id ASC
+	);
+
+ALTER TABLE SS25.TBL_ORDER
+	ADD
+		CONSTRAINT PK_TBL_ORDER
+		PRIMARY KEY (
+			order_id
+		);
+
+/* 재고상세 */
+CREATE TABLE SS25.TBL_STOCK_DETAIL (
+	stock_detail_code VARCHAR2(30) NOT NULL, /* 상품관리번호 */
+	stock_date DATE NOT NULL, /* 처리일시 */
+	stock_type VARCHAR2(20) NOT NULL, /* 입출고구분 */
+	qty NUMBER(5) NOT NULL, /* 변동수량 */
+	bigo VARCHAR2(100) NOT NULL, /* 비고 */
+	expiry_date DATE, /* 유통기한 */
+	staff_id VARCHAR2(30) NOT NULL, /* 직원번호 */
+	stock_seq NUMBER(10) NOT NULL, /* 재고순번 */
+	product_code VARCHAR2(100) NOT NULL /* 상품코드 */
+);
+
+COMMENT ON TABLE SS25.TBL_STOCK_DETAIL IS '재고상세';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.stock_detail_code IS '상품관리번호';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.stock_date IS '처리일시';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.stock_type IS '입출고구분';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.qty IS '변동수량';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.bigo IS '비고';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.expiry_date IS '유통기한';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.staff_id IS '직원번호';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.stock_seq IS '재고순번';
+
+COMMENT ON COLUMN SS25.TBL_STOCK_DETAIL.product_code IS '상품코드';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_STOCK_DETAIL
+	ON SS25.TBL_STOCK_DETAIL (
+		stock_detail_code ASC
+	);
+
+ALTER TABLE SS25.TBL_STOCK_DETAIL
+	ADD
+		CONSTRAINT PK_TBL_STOCK_DETAIL
+		PRIMARY KEY (
+			stock_detail_code
+		);
+
+/* 유통업체 */
+CREATE TABLE SS25.TBL_VENDOR (
+	vendor_code VARCHAR2(30) NOT NULL, /* 업체코드 */
+	vendor_name VARCHAR2(50) NOT NULL, /* 업체명 */
+	manager_name VARCHAR2(20) NOT NULL, /* 담당자명 */
+	address VARCHAR2(100), /* 주소 */
+	phone VARCHAR2(50) /* 연락처 */
+);
+
+COMMENT ON TABLE SS25.TBL_VENDOR IS '유통업체';
+
+COMMENT ON COLUMN SS25.TBL_VENDOR.vendor_code IS '업체코드';
+
+COMMENT ON COLUMN SS25.TBL_VENDOR.vendor_name IS '업체명';
+
+COMMENT ON COLUMN SS25.TBL_VENDOR.manager_name IS '담당자명';
+
+COMMENT ON COLUMN SS25.TBL_VENDOR.address IS '주소';
+
+COMMENT ON COLUMN SS25.TBL_VENDOR.phone IS '연락처';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_VENDOR
+	ON SS25.TBL_VENDOR (
+		vendor_code ASC
+	);
+
+ALTER TABLE SS25.TBL_VENDOR
+	ADD
+		CONSTRAINT PK_TBL_VENDOR
+		PRIMARY KEY (
+			vendor_code
+		);
+
+/* 재고 */
+CREATE TABLE SS25.TBL_STOCK (
+	stock_seq NUMBER(10) NOT NULL, /* 재고순번 */
+	product_code VARCHAR2(100) NOT NULL, /* 상품코드 */
+	stock_qty NUMBER(5) NOT NULL /* 현재수량 */
+);
+
+COMMENT ON TABLE SS25.TBL_STOCK IS '재고';
+
+COMMENT ON COLUMN SS25.TBL_STOCK.stock_seq IS '재고순번';
+
+COMMENT ON COLUMN SS25.TBL_STOCK.product_code IS '상품코드';
+
+COMMENT ON COLUMN SS25.TBL_STOCK.stock_qty IS '현재수량';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_STOCK
+	ON SS25.TBL_STOCK (
+		stock_seq ASC
+	);
+
+ALTER TABLE SS25.TBL_STOCK
+	ADD
+		CONSTRAINT PK_TBL_STOCK
+		PRIMARY KEY (
+			stock_seq
+		);
+
+/* 판매 */
+CREATE TABLE SS25.TBL_SALE (
+	sale_id VARCHAR2(30) NOT NULL, /* 판매번호 */
+	staff_id VARCHAR2(30) NOT NULL, /* 직원번호 */
+	customer_id VARCHAR2(30) NOT NULL, /* 고객번호 */
+	sale_date DATE NOT NULL, /* 판매일시 */
+	total_amt NUMBER NOT NULL, /* 새 컬럼 */
+	total_qty NUMBER NOT NULL /* 새 컬럼2 */
+);
+
+COMMENT ON TABLE SS25.TBL_SALE IS '판매';
+
+COMMENT ON COLUMN SS25.TBL_SALE.sale_id IS '판매번호';
+
+COMMENT ON COLUMN SS25.TBL_SALE.staff_id IS '직원번호';
+
+COMMENT ON COLUMN SS25.TBL_SALE.customer_id IS '고객번호';
+
+COMMENT ON COLUMN SS25.TBL_SALE.sale_date IS '판매일시';
+
+COMMENT ON COLUMN SS25.TBL_SALE.total_amt IS '새 컬럼';
+
+COMMENT ON COLUMN SS25.TBL_SALE.total_qty IS '새 컬럼2';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_SALE
+	ON SS25.TBL_SALE (
+		sale_id ASC
+	);
+
+ALTER TABLE SS25.TBL_SALE
+	ADD
+		CONSTRAINT PK_TBL_SALE
+		PRIMARY KEY (
+			sale_id
+		);
+
+/* 대분류 */
+CREATE TABLE SS25.TBL_LCATEGORY (
+	lcategory_code VARCHAR2(30) NOT NULL, /* 대분류코드 */
+	lcategory_name VARCHAR2(20) NOT NULL /* 대분류명 */
+);
+
+COMMENT ON TABLE SS25.TBL_LCATEGORY IS '대분류';
+
+COMMENT ON COLUMN SS25.TBL_LCATEGORY.lcategory_code IS '대분류코드';
+
+COMMENT ON COLUMN SS25.TBL_LCATEGORY.lcategory_name IS '대분류명';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_LCATEGORY
+	ON SS25.TBL_LCATEGORY (
+		lcategory_code ASC
+	);
+
+ALTER TABLE SS25.TBL_LCATEGORY
+	ADD
+		CONSTRAINT PK_TBL_LCATEGORY
+		PRIMARY KEY (
+			lcategory_code
+		);
+
+/* 직급 */
+CREATE TABLE SS25.TBL_JOB (
+	job_code NUMBER(5) NOT NULL, /* 직급코드 */
+	job_name VARCHAR2(20) NOT NULL /* 직급이름 */
+);
+
+COMMENT ON TABLE SS25.TBL_JOB IS '직급';
+
+COMMENT ON COLUMN SS25.TBL_JOB.job_code IS '직급코드';
+
+COMMENT ON COLUMN SS25.TBL_JOB.job_name IS '직급이름';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_JOB
+	ON SS25.TBL_JOB (
+		job_code ASC
+	);
+
+ALTER TABLE SS25.TBL_JOB
+	ADD
+		CONSTRAINT PK_TBL_JOB
+		PRIMARY KEY (
+			job_code
+		);
+
+/* 발주상세 */
+CREATE TABLE SS25.TBL_ORDER_DETAIL (
+	order_detail_id VARCHAR2(30) NOT NULL, /* 발주상세번호 */
+	order_id VARCHAR2(30) NOT NULL, /* 발주번호 */
+	product_code VARCHAR2(100) NOT NULL, /* 상품코드 */
+	price NUMBER(10) NOT NULL, /* 발주가격 */
+	qty NUMBER(5) NOT NULL /* 발주수량 */
+);
+
+COMMENT ON TABLE SS25.TBL_ORDER_DETAIL IS '발주상세';
+
+COMMENT ON COLUMN SS25.TBL_ORDER_DETAIL.order_detail_id IS '발주상세번호';
+
+COMMENT ON COLUMN SS25.TBL_ORDER_DETAIL.order_id IS '발주번호';
+
+COMMENT ON COLUMN SS25.TBL_ORDER_DETAIL.product_code IS '상품코드';
+
+COMMENT ON COLUMN SS25.TBL_ORDER_DETAIL.price IS '발주가격';
+
+COMMENT ON COLUMN SS25.TBL_ORDER_DETAIL.qty IS '발주수량';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_ORDER_DETAIL
+	ON SS25.TBL_ORDER_DETAIL (
+		order_detail_id ASC
+	);
+
+ALTER TABLE SS25.TBL_ORDER_DETAIL
+	ADD
+		CONSTRAINT PK_TBL_ORDER_DETAIL
+		PRIMARY KEY (
+			order_detail_id
+		);
+
+/* 행사 */
+CREATE TABLE SS25.TBL_EVENT (
+	event_code VARCHAR2(30) NOT NULL, /* 행사코드 */
+	event_name VARCHAR2(100) NOT NULL, /* 행사명 */
+	start_date DATE NOT NULL, /* 시작일자 */
+	end_date DATE NOT NULL /* 종료일자 */
+);
+
+COMMENT ON TABLE SS25.TBL_EVENT IS '행사';
+
+COMMENT ON COLUMN SS25.TBL_EVENT.event_code IS '행사코드';
+
+COMMENT ON COLUMN SS25.TBL_EVENT.event_name IS '행사명';
+
+COMMENT ON COLUMN SS25.TBL_EVENT.start_date IS '시작일자';
+
+COMMENT ON COLUMN SS25.TBL_EVENT.end_date IS '종료일자';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_EVENT
+	ON SS25.TBL_EVENT (
+		event_code ASC
+	);
+
+ALTER TABLE SS25.TBL_EVENT
+	ADD
+		CONSTRAINT PK_TBL_EVENT
+		PRIMARY KEY (
+			event_code
+		);
+
+/* 행사적용상품 */
+CREATE TABLE SS25.TBL_EVENT_PRODUCT (
+	event_apply_code VARCHAR2(30) NOT NULL, /* 행사적용번호 */
+	event_code VARCHAR2(30) NOT NULL, /* 행사코드 */
+	product_code VARCHAR2(100) NOT NULL /* 상품코드 */
+);
+
+COMMENT ON TABLE SS25.TBL_EVENT_PRODUCT IS '행사적용상품';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_PRODUCT.event_apply_code IS '행사적용번호';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_PRODUCT.event_code IS '행사코드';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_PRODUCT.product_code IS '상품코드';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_EVENT_PRODUCT
+	ON SS25.TBL_EVENT_PRODUCT (
+		event_apply_code ASC
+	);
+
+ALTER TABLE SS25.TBL_EVENT_PRODUCT
+	ADD
+		CONSTRAINT PK_TBL_EVENT_PRODUCT
+		PRIMARY KEY (
+			event_apply_code
+		);
+
+/* 폐기 */
+CREATE TABLE SS25.TBL_DISCARD (
+	discard_id NUMBER(10) NOT NULL, /* 폐기번호 */
+	discard_date DATE NOT NULL, /* 폐기일시 */
+	staff_id VARCHAR2(30) NOT NULL /* 직원번호 */
+);
+
+COMMENT ON TABLE SS25.TBL_DISCARD IS '폐기';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD.discard_id IS '폐기번호';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD.discard_date IS '폐기일시';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD.staff_id IS '직원번호';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_DISCARD
+	ON SS25.TBL_DISCARD (
+		discard_id ASC
+	);
+
+ALTER TABLE SS25.TBL_DISCARD
+	ADD
+		CONSTRAINT PK_TBL_DISCARD
+		PRIMARY KEY (
+			discard_id
+		);
+
+/* 폐기상세 */
+CREATE TABLE SS25.TBL_DISCARD_DETAIL (
+	discard_detail_code VARCHAR2(30) NOT NULL, /* 폐기상세번호 */
+	discard_id NUMBER(10) NOT NULL, /* 폐기번호 */
+	product_code VARCHAR2(100) NOT NULL, /* 상품코드 */
+	discard_qty NUMBER(5) NOT NULL /* 폐기수량 */
+);
+
+COMMENT ON TABLE SS25.TBL_DISCARD_DETAIL IS '폐기상세';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD_DETAIL.discard_detail_code IS '폐기상세번호';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD_DETAIL.discard_id IS '폐기번호';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD_DETAIL.product_code IS '상품코드';
+
+COMMENT ON COLUMN SS25.TBL_DISCARD_DETAIL.discard_qty IS '폐기수량';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_DISCARD_DETAIL
+	ON SS25.TBL_DISCARD_DETAIL (
+		discard_detail_code ASC
+	);
+
+ALTER TABLE SS25.TBL_DISCARD_DETAIL
+	ADD
+		CONSTRAINT PK_TBL_DISCARD_DETAIL
+		PRIMARY KEY (
+			discard_detail_code
+		);
+
+/* 결제 */
+CREATE TABLE SS25.TBL_PAYMENT (
+	pay_detail_id VARCHAR2(30) NOT NULL, /* 결제번호 */
+	sale_id VARCHAR2(30) NOT NULL, /* 판매번호 */
+	pay_status VARCHAR2(20) NOT NULL /* 결제상태 */
+);
+
+COMMENT ON TABLE SS25.TBL_PAYMENT IS '결제';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT.pay_detail_id IS '결제번호';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT.sale_id IS '판매번호';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT.pay_status IS '결제상태';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_PAYMENT
+	ON SS25.TBL_PAYMENT (
+		pay_detail_id ASC
+	);
+
+ALTER TABLE SS25.TBL_PAYMENT
+	ADD
+		CONSTRAINT PK_TBL_PAYMENT
+		PRIMARY KEY (
+			pay_detail_id
+		);
+
+/* 정산 */
+CREATE TABLE SS25.TBL_SETTLEMENT (
+	settle_id VARCHAR2(30) NOT NULL, /* 정산번호 */
+	staff_id VARCHAR2(30) NOT NULL, /* 직원번호 */
+	settle_date DATE NOT NULL, /* 정산일시 */
+	settle_cash NUMBER(10) NOT NULL, /* 정산현금 */
+	real_cash NUMBER(10) NOT NULL, /* 실제현금 */
+	diff_amt NUMBER(10) NOT NULL /* 차액 */
+);
+
+COMMENT ON TABLE SS25.TBL_SETTLEMENT IS '정산';
+
+COMMENT ON COLUMN SS25.TBL_SETTLEMENT.settle_id IS '정산번호';
+
+COMMENT ON COLUMN SS25.TBL_SETTLEMENT.staff_id IS '직원번호';
+
+COMMENT ON COLUMN SS25.TBL_SETTLEMENT.settle_date IS '정산일시';
+
+COMMENT ON COLUMN SS25.TBL_SETTLEMENT.settle_cash IS '정산현금';
+
+COMMENT ON COLUMN SS25.TBL_SETTLEMENT.real_cash IS '실제현금';
+
+COMMENT ON COLUMN SS25.TBL_SETTLEMENT.diff_amt IS '차액';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_SETTLEMENT
+	ON SS25.TBL_SETTLEMENT (
+		settle_id ASC
+	);
+
+ALTER TABLE SS25.TBL_SETTLEMENT
+	ADD
+		CONSTRAINT PK_TBL_SETTLEMENT
+		PRIMARY KEY (
+			settle_id
+		);
+
+/* 중분류 */
+CREATE TABLE SS25.TBL_MCATEGORY (
+	mcategory_code VARCHAR2(30) NOT NULL, /* 중분류코드 */
+	lcategory_code VARCHAR2(30) NOT NULL, /* 대분류코드 */
+	mcategory_name VARCHAR2(20) NOT NULL /* 중분류명 */
+);
+
+COMMENT ON TABLE SS25.TBL_MCATEGORY IS '중분류';
+
+COMMENT ON COLUMN SS25.TBL_MCATEGORY.mcategory_code IS '중분류코드';
+
+COMMENT ON COLUMN SS25.TBL_MCATEGORY.lcategory_code IS '대분류코드';
+
+COMMENT ON COLUMN SS25.TBL_MCATEGORY.mcategory_name IS '중분류명';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_MCATEGORY
+	ON SS25.TBL_MCATEGORY (
+		mcategory_code ASC
+	);
+
+ALTER TABLE SS25.TBL_MCATEGORY
+	ADD
+		CONSTRAINT PK_TBL_MCATEGORY
+		PRIMARY KEY (
+			mcategory_code
+		);
+
+/* 소분류 */
+CREATE TABLE SS25.TBL_SCATEGORY (
+	scategory_code VARCHAR2(30) NOT NULL, /* 소분류코드 */
+	mcategory_code VARCHAR2(30) NOT NULL, /* 중분류코드 */
+	scategory_name VARCHAR2(50) NOT NULL /* 소분류명 */
+);
+
+COMMENT ON TABLE SS25.TBL_SCATEGORY IS '소분류';
+
+COMMENT ON COLUMN SS25.TBL_SCATEGORY.scategory_code IS '소분류코드';
+
+COMMENT ON COLUMN SS25.TBL_SCATEGORY.mcategory_code IS '중분류코드';
+
+COMMENT ON COLUMN SS25.TBL_SCATEGORY.scategory_name IS '소분류명';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_SCATEGORY
+	ON SS25.TBL_SCATEGORY (
+		scategory_code ASC
+	);
+
+ALTER TABLE SS25.TBL_SCATEGORY
+	ADD
+		CONSTRAINT PK_TBL_SCATEGORY
+		PRIMARY KEY (
+			scategory_code
+		);
+
+/* 행사유형 */
+CREATE TABLE SS25.TBL_EVENT_TYPE (
+	event_type_code VARCHAR2(30) NOT NULL, /* 행사유형코드 */
+	event_code VARCHAR2(30) NOT NULL, /* 행사코드 */
+	event_name VARCHAR2(100) NOT NULL, /* 행사유형명 */
+	discount_amt NUMBER(5) NOT NULL /* 할인값 */
+);
+
+COMMENT ON TABLE SS25.TBL_EVENT_TYPE IS '행사유형';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_TYPE.event_type_code IS '행사유형코드';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_TYPE.event_code IS '행사코드';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_TYPE.event_name IS '행사유형명';
+
+COMMENT ON COLUMN SS25.TBL_EVENT_TYPE.discount_amt IS '할인값';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_EVENT_TYPE
+	ON SS25.TBL_EVENT_TYPE (
+		event_type_code ASC
+	);
+
+ALTER TABLE SS25.TBL_EVENT_TYPE
+	ADD
+		CONSTRAINT PK_TBL_EVENT_TYPE
+		PRIMARY KEY (
+			event_type_code
+		);
+
+/* 결제상세 */
+CREATE TABLE SS25.TBL_PAYMENT_DETAIL (
+	pay_detail_number VARCHAR2(30) NOT NULL, /* 결제상세번호 */
+	total_amt NUMBER(10) NOT NULL, /* 결제금액 */
+	total_discount NUMBER(10) NOT NULL, /* 총할인금액 */
+	used_point NUMBER(10) NOT NULL, /* 사용포인트 */
+	amt NUMBER(10) NOT NULL, /* 처리금액 */
+	pay_detail_id VARCHAR2(30) NOT NULL, /* 결제번호 */
+	pay_method VARCHAR(10) NOT NULL /* 결제수단 */
+);
+
+COMMENT ON TABLE SS25.TBL_PAYMENT_DETAIL IS '결제상세';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.pay_detail_number IS '결제상세번호';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.total_amt IS '결제금액';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.total_discount IS '총할인금액';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.used_point IS '사용포인트';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.amt IS '처리금액';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.pay_detail_id IS '결제번호';
+
+COMMENT ON COLUMN SS25.TBL_PAYMENT_DETAIL.pay_method IS '결제수단';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_PAYMENT_DETAIL
+	ON SS25.TBL_PAYMENT_DETAIL (
+		pay_detail_number ASC
+	);
+
+ALTER TABLE SS25.TBL_PAYMENT_DETAIL
+	ADD
+		CONSTRAINT PK_TBL_PAYMENT_DETAIL
+		PRIMARY KEY (
+			pay_detail_number
+		);
+
+/* 년별매출조회  */
+CREATE TABLE SS25.TBL_YEAR_SALES (
+	year VARCHAR2(20) NOT NULL, /* 년 */
+	year_sum NUMBER(20) NOT NULL /* 년별매출금액 */
+);
+
+COMMENT ON TABLE SS25.TBL_YEAR_SALES IS '년별매출조회 ';
+
+COMMENT ON COLUMN SS25.TBL_YEAR_SALES.year IS '년';
+
+COMMENT ON COLUMN SS25.TBL_YEAR_SALES.year_sum IS '년별매출금액';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_YEAR_SALES
+	ON SS25.TBL_YEAR_SALES (
+		year ASC
+	);
+
+ALTER TABLE SS25.TBL_YEAR_SALES
+	ADD
+		CONSTRAINT PK_TBL_YEAR_SALES
+		PRIMARY KEY (
+			year
+		);
+
+/* 월별매출조회 */
+CREATE TABLE SS25.TBL_MONTH_SALES (
+	month VARCHAR2(20) NOT NULL, /* 월 */
+	month_sum NUMBER(20) NOT NULL /* 월별매출금액 */
+);
+
+COMMENT ON TABLE SS25.TBL_MONTH_SALES IS '월별매출조회';
+
+COMMENT ON COLUMN SS25.TBL_MONTH_SALES.month IS '월';
+
+COMMENT ON COLUMN SS25.TBL_MONTH_SALES.month_sum IS '월별매출금액';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_MONTH_SALES
+	ON SS25.TBL_MONTH_SALES (
+		month ASC
+	);
+
+ALTER TABLE SS25.TBL_MONTH_SALES
+	ADD
+		CONSTRAINT PK_TBL_MONTH_SALES
+		PRIMARY KEY (
+			month
+		);
+
+/* 일별매출조회 */
+CREATE TABLE SS25.TBL_DAY_SALES (
+	day VARCHAR2(20) NOT NULL, /* 일 */
+	day_sum NUMBER(20) NOT NULL /* 일별매출금액 */
+);
+
+COMMENT ON TABLE SS25.TBL_DAY_SALES IS '일별매출조회';
+
+COMMENT ON COLUMN SS25.TBL_DAY_SALES.day IS '일';
+
+COMMENT ON COLUMN SS25.TBL_DAY_SALES.day_sum IS '일별매출금액';
+
+CREATE UNIQUE INDEX SS25.PK_TBL_DAY_SALES
+	ON SS25.TBL_DAY_SALES (
+		day ASC
+	);
+
+ALTER TABLE SS25.TBL_DAY_SALES
+	ADD
+		CONSTRAINT PK_TBL_DAY_SALES
+		PRIMARY KEY (
+			day
+		);
+
+ALTER TABLE SS25.TBL_PRODUCT
+	ADD
+		CONSTRAINT FK_TBL_VENDOR_TO_TBL_PRODUCT
+		FOREIGN KEY (
+			vendor_code
+		)
+		REFERENCES SS25.TBL_VENDOR (
+			vendor_code
+		);
+
+ALTER TABLE SS25.TBL_PRODUCT
+	ADD
+		CONSTRAINT FK_TBL_SCATEGORY_TO_TBL_PRODUCT
+		FOREIGN KEY (
+			scategory_code
+		)
+		REFERENCES SS25.TBL_SCATEGORY (
+			scategory_code
+		);
+
+ALTER TABLE SS25.TBL_PRODUCT
+	ADD
+		CONSTRAINT FK_TBL_EVENT_TO_TBL_PRODUCT
+		FOREIGN KEY (
+			event_code
+		)
+		REFERENCES SS25.TBL_EVENT (
+			event_code
+		);
+
+ALTER TABLE SS25.TBL_STAFF
+	ADD
+		CONSTRAINT FK_TBL_JOB_TO_TBL_STAFF
+		FOREIGN KEY (
+			job_code
+		)
+		REFERENCES SS25.TBL_JOB (
+			job_code
+		);
+
+ALTER TABLE SS25.TBL_SALE_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_PRODUCT_TO_TBL_SALE_DETAIL
+		FOREIGN KEY (
+			product_code
+		)
+		REFERENCES SS25.TBL_PRODUCT (
+			product_code
+		);
+
+ALTER TABLE SS25.TBL_SALE_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_SALE_TO_TBL_SALE_DETAIL
+		FOREIGN KEY (
+			sale_id
+		)
+		REFERENCES SS25.TBL_SALE (
+			sale_id
+		);
+
+ALTER TABLE SS25.TBL_ORDER
+	ADD
+		CONSTRAINT FK_TBL_STAFF_TO_TBL_ORDER
+		FOREIGN KEY (
+			staff_id
+		)
+		REFERENCES SS25.TBL_STAFF (
+			staff_id
+		);
+
+ALTER TABLE SS25.TBL_ORDER
+	ADD
+		CONSTRAINT FK_TBL_VENDOR_TO_TBL_ORDER
+		FOREIGN KEY (
+			vendor_code
+		)
+		REFERENCES SS25.TBL_VENDOR (
+			vendor_code
+		);
+
+ALTER TABLE SS25.TBL_STOCK_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_STAFF_TO_TBL_STOCK_DETAIL
+		FOREIGN KEY (
+			staff_id
+		)
+		REFERENCES SS25.TBL_STAFF (
+			staff_id
+		);
+
+ALTER TABLE SS25.TBL_STOCK_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_STOCK_TO_TBL_STOCK_DETAIL
+		FOREIGN KEY (
+			stock_seq
+		)
+		REFERENCES SS25.TBL_STOCK (
+			stock_seq
+		);
+
+ALTER TABLE SS25.TBL_STOCK_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_PRODUCT_TO_TBL_STOCK_DETAIL
+		FOREIGN KEY (
+			product_code
+		)
+		REFERENCES SS25.TBL_PRODUCT (
+			product_code
+		);
+
+ALTER TABLE SS25.TBL_STOCK
+	ADD
+		CONSTRAINT FK_TBL_PRODUCT_TO_TBL_STOCK
+		FOREIGN KEY (
+			product_code
+		)
+		REFERENCES SS25.TBL_PRODUCT (
+			product_code
+		);
+
+ALTER TABLE SS25.TBL_SALE
+	ADD
+		CONSTRAINT FK_TBL_CUSTOMER_TO_TBL_SALE
+		FOREIGN KEY (
+			customer_id
+		)
+		REFERENCES SS25.TBL_CUSTOMER (
+			customer_id
+		);
+
+ALTER TABLE SS25.TBL_SALE
+	ADD
+		CONSTRAINT FK_TBL_STAFF_TO_TBL_SALE
+		FOREIGN KEY (
+			staff_id
+		)
+		REFERENCES SS25.TBL_STAFF (
+			staff_id
+		);
+
+ALTER TABLE SS25.TBL_ORDER_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_ORDER_TO_TBL_ORDER_DETAIL
+		FOREIGN KEY (
+			order_id
+		)
+		REFERENCES SS25.TBL_ORDER (
+			order_id
+		);
+
+ALTER TABLE SS25.TBL_ORDER_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_PRODUCT_TO_TBL_ORDER_DETAIL
+		FOREIGN KEY (
+			product_code
+		)
+		REFERENCES SS25.TBL_PRODUCT (
+			product_code
+		);
+
+ALTER TABLE SS25.TBL_EVENT_PRODUCT
+	ADD
+		CONSTRAINT FK_TBL_EVENT_TO_TBL_EVENT_PRODUCT
+		FOREIGN KEY (
+			event_code
+		)
+		REFERENCES SS25.TBL_EVENT (
+			event_code
+		);
+
+ALTER TABLE SS25.TBL_EVENT_PRODUCT
+	ADD
+		CONSTRAINT FK_TBL_PRODUCT_TO_TBL_EVENT_PRODUCT
+		FOREIGN KEY (
+			product_code
+		)
+		REFERENCES SS25.TBL_PRODUCT (
+			product_code
+		);
+
+ALTER TABLE SS25.TBL_DISCARD
+	ADD
+		CONSTRAINT FK_TBL_STAFF_TO_TBL_DISCARD
+		FOREIGN KEY (
+			staff_id
+		)
+		REFERENCES SS25.TBL_STAFF (
+			staff_id
+		);
+
+ALTER TABLE SS25.TBL_DISCARD_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_DISCARD_TO_TBL_DISCARD_DETAIL
+		FOREIGN KEY (
+			discard_id
+		)
+		REFERENCES SS25.TBL_DISCARD (
+			discard_id
+		);
+
+ALTER TABLE SS25.TBL_DISCARD_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_PRODUCT_TO_TBL_DISCARD_DETAIL
+		FOREIGN KEY (
+			product_code
+		)
+		REFERENCES SS25.TBL_PRODUCT (
+			product_code
+		);
+
+ALTER TABLE SS25.TBL_PAYMENT
+	ADD
+		CONSTRAINT FK_TBL_SALE_TO_TBL_PAYMENT
+		FOREIGN KEY (
+			sale_id
+		)
+		REFERENCES SS25.TBL_SALE (
+			sale_id
+		);
+
+ALTER TABLE SS25.TBL_SETTLEMENT
+	ADD
+		CONSTRAINT FK_TBL_STAFF_TO_TBL_SETTLEMENT
+		FOREIGN KEY (
+			staff_id
+		)
+		REFERENCES SS25.TBL_STAFF (
+			staff_id
+		);
+
+ALTER TABLE SS25.TBL_MCATEGORY
+	ADD
+		CONSTRAINT FK_TBL_LCATEGORY_TO_TBL_MCATEGORY
+		FOREIGN KEY (
+			lcategory_code
+		)
+		REFERENCES SS25.TBL_LCATEGORY (
+			lcategory_code
+		);
+
+ALTER TABLE SS25.TBL_SCATEGORY
+	ADD
+		CONSTRAINT FK_TBL_MCATEGORY_TO_TBL_SCATEGORY
+		FOREIGN KEY (
+			mcategory_code
+		)
+		REFERENCES SS25.TBL_MCATEGORY (
+			mcategory_code
+		);
+
+ALTER TABLE SS25.TBL_EVENT_TYPE
+	ADD
+		CONSTRAINT FK_TBL_EVENT_TO_TBL_EVENT_TYPE
+		FOREIGN KEY (
+			event_code
+		)
+		REFERENCES SS25.TBL_EVENT (
+			event_code
+		);
+
+ALTER TABLE SS25.TBL_PAYMENT_DETAIL
+	ADD
+		CONSTRAINT FK_TBL_PAYMENT_TO_TBL_PAYMENT_DETAIL
+		FOREIGN KEY (
+			pay_detail_id
+		)
+		REFERENCES SS25.TBL_PAYMENT (
+			pay_detail_id
+		);

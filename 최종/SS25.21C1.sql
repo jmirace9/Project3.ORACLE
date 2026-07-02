@@ -1,5 +1,10 @@
 SELECT * FROM TBL_STAFF;
-
+select * from tbl_sale;
+select * from tbl_payment_detail;
+select * from tbl_payment;
+select * from tbl_sale_detail;
+select * from tbl_stock;
+select * from tbl_stock_detail;
 -- 3. CU영수증출력
 -- 판매번호, 판매일    ( 헤드쿼리 => 1번쿼리)
 ------------------------------------------------------------
@@ -54,11 +59,7 @@ SELECT
     ,pd.AMT 결제금액
     ,pd.PAY_METHOD 결제수단
 FROM TBL_PAYMENT p JOIN TBL_PAYMENT_DETAIL pd ON p.pay_detail_id = pd.pay_detail_id
-WHERE p.sale_id = 'SA001';
-
-
-
-
+WHERE p.sale_id = 'SA002';
 
 
 
@@ -66,4 +67,22 @@ WHERE p.sale_id = 'SA001';
 -- 4. 환불처리.
 
 SELECT *
-FROM TBL_SALE_DETAIL;
+FROM TBL_SALE;
+/
+BEGIN
+    UP_REFUND('SA001','ST01');
+END;
+SELECT *
+FROM TBL_STAFF;
+/
+SELECT *
+FROM TBL_PAYMENT
+WHERE SALE_ID='SA002';
+SELECT *
+FROM TBL_PAYMENT_DETAIL
+WHERE PAY_DETAIL_ID IN
+(
+    SELECT PAY_DETAIL_ID
+    FROM TBL_PAYMENT
+    WHERE SALE_ID='SA002'
+);
