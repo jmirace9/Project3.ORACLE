@@ -1,0 +1,11 @@
+﻿event_type_code,event_code,event_name,discount_amt
+ET01,EV01,1+1,50.0
+ET02,EV02,2+1,33.0
+ET03,EV03,20%할인,20.0
+ET04,EV04,10%할인,10.0
+ET05,EV05,30%할인,30.0
+ET06,EV06,1+1,50.0
+ET07,EV07,2+1,33.0
+ET08,EV08,15%할인,15.0
+ET09,EV09,5%할인,5.0
+ET10,EV10,25%할인,25.0
