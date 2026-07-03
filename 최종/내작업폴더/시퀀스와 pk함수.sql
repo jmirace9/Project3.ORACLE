@@ -26,135 +26,89 @@ INCREMENT BY 1
 NOCACHE
 NOCYCLE;
 -- 
+-----------------시퀀스 사용 x--------------------------------------
 /*
     함수명 : UF_NEXT_PAYMENT
 
     작성자 : 조지훈
 
     기능
-    - 결제번호(PAY_DETAIL_ID)를 생성한다.
-    - Oracle Sequence와 접두어(PA)를 조합하여 문자열 PK를 반환한다.
+    - PAYMENT PK 생성
+    - 현재 가장 큰 PAY_DETAIL_ID를 찾아 다음 번호를 반환한다.
 
     예)
-    PA071
-    PA072
-    PA073
+    PA001
+    PA002
+    ...
 */
+
 CREATE OR REPLACE FUNCTION UF_NEXT_PAYMENT
-RETURN TBL_PAYMENT.PAY_DETAIL_ID%TYPE
+RETURN VARCHAR2
 IS
-    -- 반환할 결제번호
-    V_PAYMENT_ID TBL_PAYMENT.PAY_DETAIL_ID%TYPE;
+    V_NEXT_NO NUMBER;
 BEGIN
 
-    -- 시퀀스 번호 앞에 PA를 붙여 결제번호 생성
-    V_PAYMENT_ID :=
-        'PA' || LPAD(SEQ_PAYMENT.NEXTVAL, 3, '0');
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(PAY_DETAIL_ID,3))),0)+1
+    INTO V_NEXT_NO
+    FROM TBL_PAYMENT;
 
-    RETURN V_PAYMENT_ID;
+    RETURN 'PA' || LPAD(V_NEXT_NO,3,'0');
 
 END;
 /
 /*
-==========================================================
- Function Name : UF_NEXT_PAYMENT_DETAIL
- Description   : 결제상세번호 생성 함수
- Author        : 조지훈
- Date          : 2026-07-01
-==========================================================
-
-기능
-- 결제상세번호(PAY_DETAIL_NUMBER)를 생성한다.
-- Oracle Sequence와 접두어(PAD)를 조합하여 문자열 PK를 반환한다.
-
-예)
-PAD101
-PAD102
-PAD103
-==========================================================
+    PAYMENT_DETAIL PK 생성
 */
 
 CREATE OR REPLACE FUNCTION UF_NEXT_PAYMENT_DETAIL
-RETURN TBL_PAYMENT_DETAIL.PAY_DETAIL_NUMBER%TYPE
+RETURN VARCHAR2
 IS
-    -- 반환할 결제상세번호
-    V_PAYMENT_DETAIL_ID TBL_PAYMENT_DETAIL.PAY_DETAIL_NUMBER%TYPE;
+    V_NEXT_NO NUMBER;
 BEGIN
 
-    -- 시퀀스 번호 앞에 PAD를 붙여 결제상세번호 생성
-    V_PAYMENT_DETAIL_ID :=
-        'PAD' || LPAD(SEQ_PAYMENT_DETAIL.NEXTVAL, 3, '0');
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(PAY_DETAIL_NUMBER,4))),0)+1
+    INTO V_NEXT_NO
+    FROM TBL_PAYMENT_DETAIL;
 
-    RETURN V_PAYMENT_DETAIL_ID;
+    RETURN 'PAD' || LPAD(V_NEXT_NO,3,'0');
 
 END;
 /
-show errors;
 /*
-==========================================================
- Function Name : UF_NEXT_SALE_DETAIL
- Description   : 판매상세번호 생성 함수
- Author        : 조지훈
- Date          : 2026-07-01
-==========================================================
-
-기능
-- 판매상세번호(SALE_DETAIL_ID)를 생성한다.
-- Oracle Sequence와 접두어(SAD)를 조합하여 문자열 PK를 반환한다.
-
-예)
-SAD201
-SAD202
-SAD203
-==========================================================
+    SALE_DETAIL PK 생성
 */
 
 CREATE OR REPLACE FUNCTION UF_NEXT_SALE_DETAIL
-RETURN TBL_SALE_DETAIL.SALE_DETAIL_ID%TYPE
+RETURN VARCHAR2
 IS
-    -- 반환할 판매상세번호
-    V_SALE_DETAIL_ID TBL_SALE_DETAIL.SALE_DETAIL_ID%TYPE;
+    V_NEXT_NO NUMBER;
 BEGIN
 
-    -- 시퀀스 번호 앞에 SAD를 붙여 판매상세번호 생성
-    V_SALE_DETAIL_ID :=
-        'SAD' || LPAD(SEQ_SALE_DETAIL.NEXTVAL, 3, '0');
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(SALE_DETAIL_ID,4))),0)+1
+    INTO V_NEXT_NO
+    FROM TBL_SALE_DETAIL;
 
-    RETURN V_SALE_DETAIL_ID;
+    RETURN 'SAD' || LPAD(V_NEXT_NO,3,'0');
 
 END;
 /
+
 /*
-==========================================================
- Function Name : UF_NEXT_STOCK_DETAIL
- Description   : 재고상세번호 생성 함수
- Author        : 조지훈
- Date          : 2026-07-01
-==========================================================
-
-기능
-- 재고상세번호(STOCK_DETAIL_ID)를 생성한다.
-- Oracle Sequence와 접두어(SD)를 조합하여 문자열 PK를 반환한다.
-
-예)
-SD201
-SD202
-SD203
-==========================================================
+    STOCK_DETAIL PK 생성
 */
 
 CREATE OR REPLACE FUNCTION UF_NEXT_STOCK_DETAIL
-RETURN TBL_STOCK_DETAIL.STOCK_DETAIL_CODE%TYPE
+RETURN VARCHAR2
 IS
-    -- 반환할 재고상세번호
-    V_STOCK_DETAIL_ID TBL_STOCK_DETAIL.STOCK_DETAIL_CODE%TYPE;
+    V_NEXT_NO NUMBER;
 BEGIN
 
-    -- 시퀀스 번호 앞에 SD를 붙여 재고상세번호 생성
-    V_STOCK_DETAIL_ID :=
-        'SD' || LPAD(SEQ_STOCK_DETAIL.NEXTVAL, 3, '0');
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(STOCK_DETAIL_CODE,3))),0)+1
+    INTO V_NEXT_NO
+    FROM TBL_STOCK_DETAIL;
 
-    RETURN V_STOCK_DETAIL_ID;
+    RETURN 'SD' || LPAD(V_NEXT_NO,3,'0');
 
 END;
 /
+
