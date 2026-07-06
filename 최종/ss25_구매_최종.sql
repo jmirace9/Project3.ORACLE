@@ -10,229 +10,361 @@ BEGIN
     END IF;
 END;
 
--- 문규리
+-- 안정빈
 ---시퀀스 생성
+
+
+-- 1. 기존 시퀀스 삭제
 DROP SEQUENCE seq_product;
 DROP SEQUENCE seq_order;
 DROP SEQUENCE seq_order_detail;
+DROP SEQUENCE seq_stock_seq;
+DROP SEQUENCE seq_stock_detail_code;
+DROP SEQUENCE seq_discard;
+DROP SEQUENCE seq_discard_detail;
 
+-- 2. 시퀀스 동적 생성 블록
 DECLARE
-    v_max_product       NUMBER;
-    v_max_order         NUMBER;
-    v_max_order_detail  NUMBER;
+    v_max_product        NUMBER;
+    v_max_order          NUMBER;
+    v_max_order_detail   NUMBER;
+    v_max_stock          NUMBER;
+    v_max_stock_detail   NUMBER;
+    v_max_discard        NUMBER;
+    v_max_discard_detail NUMBER;
 BEGIN
-   
-SELECT NVL(MAX(TO_NUMBER(SUBSTR(product_code, 3))), 100) + 1 
-INTO v_max_product FROM tbl_product;
-    
-    
-SELECT NVL(MAX(TO_NUMBER(SUBSTR(order_id, 3))), 60) + 1 
-INTO v_max_order FROM tbl_order;
-    
-    
-SELECT NVL(MAX(TO_NUMBER(SUBSTR(order_detail_id, 3))), 160) + 1 
-INTO v_max_order_detail FROM tbl_order_detail;
 
+    -- 상품, 발주, 발주상세 시퀀스
+
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(product_code, 3))), 100) + 1 INTO v_max_product FROM tbl_product;
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(order_id, 3))), 60) + 1 INTO v_max_order FROM tbl_order;
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(order_detail_id, 3))), 160) + 1 INTO v_max_order_detail FROM tbl_order_detail;
     
-EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_product START WITH ' || v_max_product || ' INCREMENT BY 1 NOCACHE NOCYCLE';
-EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_order START WITH ' || v_max_order || ' INCREMENT BY 1 NOCACHE NOCYCLE';
-EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_order_detail START WITH ' || v_max_order_detail || ' INCREMENT BY 1 NOCACHE NOCYCLE';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_product START WITH ' || v_max_product || ' INCREMENT BY 1 NOCACHE NOCYCLE';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_order START WITH ' || v_max_order || ' INCREMENT BY 1 NOCACHE NOCYCLE';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_order_detail START WITH ' || v_max_order_detail || ' INCREMENT BY 1 NOCACHE NOCYCLE';
+
+    -- 재고, 재고상세 시퀀스
+
+    SELECT NVL(MAX(stock_seq), 0) + 1 INTO v_max_stock FROM tbl_stock;
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(stock_detail_code, 3))), 0) + 1 INTO v_max_stock_detail FROM tbl_stock_detail;
+    
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_stock_seq START WITH ' || v_max_stock || ' INCREMENT BY 1';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_stock_detail_code START WITH ' || v_max_stock_detail || ' INCREMENT BY 1';
+
+    -- 폐기, 폐기상세 시퀀스
+
+    SELECT NVL(MAX(discard_id), 0) + 1 INTO v_max_discard FROM tbl_discard;
+    SELECT NVL(MAX(TO_NUMBER(SUBSTR(discard_detail_code, 3))), 0) + 1 INTO v_max_discard_detail FROM tbl_discard_detail;
+    
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_discard START WITH ' || v_max_discard || ' INCREMENT BY 1';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_discard_detail START WITH ' || v_max_discard_detail || ' INCREMENT BY 1';
 END;
+/
 
+-- 3. 상품 등록 프로시저
 
-select * from tbl_product;
-delete from tbl_product where product_code > 'PR100';
-------------------------------------------
--- 신상품 등록!
-------------------------------------------
-CREATE OR REPLACE PROCEDURE proc_register_product
+CREATE OR REPLACE PROCEDURE proc_register_product 
 (
-    p_vendor_code     IN VARCHAR2,
-    p_scategory_code  IN VARCHAR2,
-    p_product_name    IN VARCHAR2,
-    p_barcode         IN VARCHAR2,
-    p_price           IN NUMBER
-)
+    p_vendor_code    IN VARCHAR2, 
+    p_scategory_code IN VARCHAR2,
+    p_product_name   IN VARCHAR2, 
+    p_barcode        IN VARCHAR2, 
+    p_price          IN NUMBER
+) 
 IS
-    v_cnt NUMBER;
+    v_cnt NUMBER; 
     v_product_code NUMBER;
 BEGIN
     v_product_code := seq_product.NEXTVAL;
-
+    
     -- 바코드 중복 체크
     SELECT COUNT(*) INTO v_cnt FROM tbl_product WHERE barcode = p_barcode;
-
-    IF v_cnt > 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, '바코드 중복');
+    
+    IF v_cnt > 0 THEN 
+        RAISE_APPLICATION_ERROR(-20002, '바코드 중복'); 
     END IF;
-
+    
     -- 상품명 중복 체크
     SELECT COUNT(*) INTO v_cnt FROM tbl_product WHERE product_name = p_product_name;
-
-    IF v_cnt > 0 THEN
-        RAISE_APPLICATION_ERROR(-20003, '상품명 중복');
+    
+    IF v_cnt > 0 THEN 
+        RAISE_APPLICATION_ERROR(-20003, '상품명 중복'); 
     END IF;
 
-    INSERT INTO tbl_product
-    VALUES
-    (
-        'PR' || v_product_code,
-        p_vendor_code,
-        p_scategory_code,
-        NULL,
-        p_product_name,
-        p_barcode,
+    -- 상품 등록
+    INSERT INTO tbl_product 
+    VALUES (
+        'PR' || v_product_code, 
+        p_vendor_code, 
+        p_scategory_code, 
+        NULL, 
+        p_product_name, 
+        p_barcode, 
         p_price
     );
-
-    DBMS_OUTPUT.PUT_LINE(
-        '새 상품이 등록되었습니다 : ' || p_product_name ||
-        ' / 상품코드 : PR' || v_product_code ||
-        ' / 유통업체 : ' || p_vendor_code ||
-        ' / 소비자가 : ' || p_price
-    );
+    
+    DBMS_OUTPUT.PUT_LINE('새 상품 등록: ' || p_product_name || ' / PR' || v_product_code);
 END;
 /
 
 
-
-------------------------------------------
--- 발주등록!
-------------------------------------------
-CREATE OR REPLACE PROCEDURE proc_create_order
+-- 4. 발주 등록 프로시저
+CREATE OR REPLACE PROCEDURE proc_create_order 
 (
-    p_order_date  IN DATE,
-    p_staff_id    IN VARCHAR2,
-    p_vendor_code IN VARCHAR2,
+    p_order_date  IN DATE, 
+    p_staff_id    IN VARCHAR2, 
+    p_vendor_code IN VARCHAR2, 
     p_order_id    OUT VARCHAR2
-)
+) 
 IS
     v_order_id VARCHAR2(20);
 BEGIN
     v_order_id := 'OR' || seq_order.NEXTVAL;
-
-    INSERT INTO tbl_order
+    
+    INSERT INTO tbl_order 
     VALUES (
-        v_order_id,
-        p_order_date,
-        '진행중',
-        p_staff_id,
+        v_order_id, 
+        p_order_date, 
+        '진행중', 
+        p_staff_id, 
         p_vendor_code
     );
-
+    
     p_order_id := v_order_id;
-    DBMS_OUTPUT.put_line('발주번호: ' || v_order_id || '----------');
 END;
 /
 
 
-------------------------------------------
--- 발주목록!
-------------------------------------------
-CREATE OR REPLACE PROCEDURE proc_add_order_detail
+-- 5. 발주 상세 추가 프로시저
+CREATE OR REPLACE PROCEDURE proc_add_order_detail 
 (
-    p_order_id        IN VARCHAR2,
-    p_product_code    IN VARCHAR2,
-    p_price           IN NUMBER,
-    p_qty             IN NUMBER
-)
+    p_order_id     IN VARCHAR2, 
+    p_product_code IN VARCHAR2, 
+    p_price        IN NUMBER, 
+    p_qty          IN NUMBER
+) 
 IS
-    v_cnt NUMBER;
-    v_product_name tbl_product.product_name%TYPE;
+    v_cnt NUMBER; 
+    v_product_name tbl_product.product_name%TYPE; 
     v_od_id tbl_order_detail.order_detail_id%TYPE;
 BEGIN
-    -- 상품 존재 체크
+    -- 상품 존재 여부 체크
     SELECT COUNT(*) INTO v_cnt FROM tbl_product WHERE product_code = p_product_code;
-
-    IF v_cnt = 0 THEN
-        RAISE_APPLICATION_ERROR(-20001, '존재하지 않는 상품입니다. 발주 중단');
+    
+    IF v_cnt = 0 THEN 
+        RAISE_APPLICATION_ERROR(-20001, '상품 없음'); 
     END IF;
     
     v_od_id := 'OD' || seq_order_detail.NEXTVAL;
     
-    -- 발주상세 insert
-    INSERT INTO tbl_order_detail
+    INSERT INTO tbl_order_detail 
     VALUES (
-        v_od_id,
-        p_order_id,
-        p_product_code,
-        p_price,
+        v_od_id, 
+        p_order_id, 
+        p_product_code, 
+        p_price, 
         p_qty
     );
-    
-    SELECT product_name INTO v_product_name FROM tbl_product WHERE product_code = p_product_code;
-    
-    DBMS_OUTPUT.put_line('발주상세번호: ' || v_od_id || ' 상품: ' || v_product_name || ' / 발주단가: ' || p_price || ' 발주수량: ' || p_qty);
 END;
+/
 
 
-
--- 1. 새 상품 등록 시연
-SET SERVEROUTPUT ON;
-BEGIN
-    proc_register_product(
-        'VE04',
-        'SC17',
-        '요플레 c',
-        '880100000103',
-        1500
-    );
-    proc_register_product(
-        'VE04',
-        'SC17',
-        '요플레 D',
-        '880100000104',
-        1500
-    );
-END;
-
-select * from tbl_product
-order by product_code DESC
-fetch first 10 rows only;
-
-delete from tbl_product where product_code > 'PR100';
-commit;
-
-select * from tbl_order_detail;
--- 2. 발주 신청 시연
+-- 6. 입고 자동화 트리거
+CREATE OR REPLACE TRIGGER ut_order_stock_in 
+AFTER UPDATE ON tbl_order 
+FOR EACH ROW
 DECLARE
-    v_order_id VARCHAR2(20);
+    v_stock_seq NUMBER; 
+    v_mcategory_code tbl_mcategory.mcategory_code%TYPE; 
+    v_expiry_date DATE; 
+    v_detail_cnt NUMBER;
 BEGIN
-    proc_create_order(
-        SYSDATE,
-        'ST04',
-        'VE04',
-        v_order_id
-    );
+    -- 상태가 '완료'로 변경될 때만 실행
+    IF :OLD.order_status != '완료' AND :NEW.order_status = '완료' THEN
+        
+        -- 빈 발주서 체크
+        SELECT COUNT(*) INTO v_detail_cnt FROM tbl_order_detail WHERE order_id = :NEW.order_id;
+        
+        IF v_detail_cnt = 0 THEN 
+            RAISE_APPLICATION_ERROR(-20030, '상세 내역 없음'); 
+        END IF;
+        
+        -- 발주 상세 내역을 반복하며 재고 처리
+        FOR item IN (
+            SELECT product_code, qty 
+            FROM tbl_order_detail 
+            WHERE order_id = :NEW.order_id
+        ) 
+        LOOP
+            -- 자동 재고 입고 
+            MERGE INTO tbl_stock t 
+            USING DUAL ON (t.product_code = item.product_code)
+            WHEN MATCHED THEN 
+                UPDATE SET t.stock_qty = t.stock_qty + item.qty
+            WHEN NOT MATCHED THEN 
+                INSERT (stock_seq, product_code, stock_qty) 
+                VALUES (seq_stock_seq.NEXTVAL, item.product_code, item.qty);
+            
+            -- 등록된 재고 순번 조회
+            SELECT stock_seq INTO v_stock_seq 
+            FROM tbl_stock 
+            WHERE product_code = item.product_code;
+            
+            -- 유통기한 설정을 위한 중분류 조회
+            SELECT m.mcategory_code INTO v_mcategory_code 
+            FROM tbl_product p 
+            JOIN tbl_scategory s ON p.scategory_code = s.scategory_code 
+            JOIN tbl_mcategory m ON s.mcategory_code = m.mcategory_code 
+            WHERE p.product_code = item.product_code;
+            
+            v_expiry_date := 
+                CASE v_mcategory_code 
+                    WHEN 'MC01' THEN SYSDATE + 180 
+                    WHEN 'MC02' THEN SYSDATE + 300 
+                    WHEN 'MC03' THEN SYSDATE + 240 
+                    WHEN 'MC04' THEN SYSDATE + 14 
+                    WHEN 'MC05' THEN SYSDATE + 365 
+                    ELSE NULL 
+                END;
+            
+            -- 재고 상세(이력) 등록
+            INSERT INTO tbl_stock_detail (
+                stock_detail_code, stock_date, stock_type, 
+                qty, bigo, expiry_date, staff_id, stock_seq, product_code
+            ) 
+            VALUES (
+                'SD' || seq_stock_detail_code.NEXTVAL, 
+                SYSDATE, 
+                '발주입고', 
+                item.qty, 
+                '발주번호: ' || :NEW.order_id || ' 처리완료', 
+                v_expiry_date, 
+                :NEW.staff_id, 
+                v_stock_seq, 
+                item.product_code
+            );
+        END LOOP;
+    END IF;
+END;
+/
 
-    proc_add_order_detail(
-        v_order_id,
-        'PR101',
-        1000,
-        10
-    );
 
-    proc_add_order_detail(
-        v_order_id,
-        'PR102',
-        1000,
-        20
-    );
+-- 7. 폐기 프로시저
+CREATE OR REPLACE PROCEDURE up_create_discard 
+(
+    p_staff_id IN VARCHAR2, 
+    p_discard_id OUT NUMBER
+) 
+IS
+    v_staff_cnt NUMBER; 
+    v_discard_id NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_staff_cnt FROM tbl_staff WHERE staff_id = p_staff_id;
+    
+    IF v_staff_cnt = 0 THEN 
+        RAISE_APPLICATION_ERROR(-20010, '직원 없음'); 
+    END IF;
+    
+    v_discard_id := seq_discard.NEXTVAL;
+    
+    INSERT INTO tbl_discard (discard_id, discard_date, staff_id) 
+    VALUES (v_discard_id, SYSDATE, p_staff_id);
+    
+    p_discard_id := v_discard_id;
+END;
+/
 
-    proc_add_order_detail(
-        v_order_id,
-        'PR090',
-        1000,
-        30
+
+-- 8. 폐기 상세 추가 프로시저
+CREATE OR REPLACE PROCEDURE up_add_discard_detail 
+(
+    p_discard_id   IN NUMBER, 
+    p_product_code IN VARCHAR2, 
+    p_discard_qty  IN NUMBER
+) 
+IS
+    v_detail_code VARCHAR2(30); 
+    v_stock_cnt NUMBER; 
+    v_current_qty NUMBER; 
+    v_discard_cnt NUMBER;
+BEGIN
+    IF p_discard_qty <= 0 THEN 
+        RAISE_APPLICATION_ERROR(-20020, '수량 1 이상'); 
+    END IF;
+    
+    SELECT COUNT(*) INTO v_discard_cnt FROM tbl_discard WHERE discard_id = p_discard_id;
+    
+    IF v_discard_cnt = 0 THEN 
+        RAISE_APPLICATION_ERROR(-20021, '영수증 없음'); 
+    END IF;
+    
+    SELECT COUNT(*) INTO v_stock_cnt FROM tbl_stock WHERE product_code = p_product_code;
+    
+    IF v_stock_cnt = 0 THEN 
+        RAISE_APPLICATION_ERROR(-20011, '상품 없음'); 
+    END IF;
+    
+    -- 행 잠금 (Row Lock)을 통한 동시성 제어
+    SELECT stock_qty INTO v_current_qty 
+    FROM tbl_stock 
+    WHERE product_code = p_product_code 
+    FOR UPDATE;
+    
+    IF v_current_qty < p_discard_qty THEN 
+        RAISE_APPLICATION_ERROR(-20012, '재고 부족'); 
+    END IF;
+    
+    v_detail_code := 'DI' || LPAD(seq_discard_detail.NEXTVAL,3,'0');
+    
+    INSERT INTO tbl_discard_detail (
+        discard_detail_code, discard_id, product_code, discard_qty
+    ) 
+    VALUES (
+        v_detail_code, 
+        p_discard_id, 
+        p_product_code, 
+        p_discard_qty
     );
 END;
-
-select * from tbl_order;
-
-ROLLBACK;
+/
 
 
-select * from tbl_order;
+-- 9. 폐기 자동화 트리거
+CREATE OR REPLACE TRIGGER ut_discard_outbound 
+AFTER INSERT ON tbl_discard_detail 
+FOR EACH ROW
+DECLARE
+    v_stock_seq NUMBER; 
+    v_staff_id VARCHAR2(30);
+BEGIN
+    -- 1. 창고 재고 차감
+    UPDATE tbl_stock 
+    SET stock_qty = stock_qty - :NEW.discard_qty 
+    WHERE product_code = :NEW.product_code;
+    
+    -- 필수 데이터 조회
+    SELECT stock_seq INTO v_stock_seq FROM tbl_stock WHERE product_code = :NEW.product_code;
+    SELECT staff_id INTO v_staff_id FROM tbl_discard WHERE discard_id = :NEW.discard_id;
+    
+    -- 2. 재고 상세 테이블 이력 기록
+    INSERT INTO tbl_stock_detail (
+        stock_detail_code, stock_date, stock_type, 
+        qty, bigo, staff_id, stock_seq, product_code
+    ) 
+    VALUES (
+        'SD' || seq_stock_detail_code.NEXTVAL, 
+        SYSDATE, 
+        '폐기출고', 
+        :NEW.discard_qty, 
+        '폐기번호 ' || :NEW.discard_id, 
+        v_staff_id, 
+        v_stock_seq, 
+        :NEW.product_code
+    );
+END;
+/
+
 ---테이블확인용
 select * from tbl_product
 order by product_code;
@@ -1277,323 +1409,6 @@ exec up_refund('SA072');
 select * from tbl_stock_detail;
 -- 조지훈 끝
 
-
-
-
-
-
-
-
--- 정빈시작
-
---------------------------------------------------------------------------------
--- 새 상품을 발주 할 경우 상품테이블에서 먼저 상품을 insert 한 다음
--- 발주 테이블에서 insert 를 한다 이때 발주 상태는 대기중
--- 발주 상세 테이블에 발주를 넣은것을 insert 한다
-
--- 발주 테이블에서 발주 상세를 완료 라고 update 하면 트리거 발생
--- 재고 테이블에서 현재 수량이 발주를 넣은 수량만큼 증가
--- 재고 상세 테이블에서 처리일시, 입출고구분, 변동수량, 비고 유통기한 추가
-
-
--- 재고 새로운 수량 시 stock_seq 자동증가 sequence
-DECLARE
-    v_max NUMBER;
-BEGIN
-    SELECT NVL(MAX(stock_seq), 0) + 1 INTO v_max FROM tbl_stock;
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_stock_seq START WITH ' || v_max || ' INCREMENT BY 1';
-END;
-
--- stock_detail 테이블 pk 자동증가 sequence
-DECLARE
-    v_max NUMBER;
-BEGIN
-    SELECT NVL(MAX(TO_NUMBER(SUBSTR(stock_detail_code, 3))), 0) + 1 
-    INTO v_max 
-    FROM tbl_stock_detail;
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_stock_detail_code START WITH ' || v_max || ' INCREMENT BY 1';
-END;
-
-SELECT seq_stock_detail_code.CURRVAL
-FROM dual;
-select * from tbl_stock_detail;
-DROP SEQUENCE SEQ_STOCK_DETAIL_CODE;
-
-CREATE SEQUENCE SEQ_STOCK_DETAIL_CODE INCREMENT BY 1 START WITH 207 MAXVALUE 9999999999999999999999999999 MINVALUE 207 CACHE 20;
-
-
-CREATE OR REPLACE TRIGGER ut_order_stock_in AFTER
-UPDATE ON tbl_order
-FOR EACH ROW
-DECLARE
-    v_stock_seq NUMBER;
-    v_mcategory_code tbl_mcategory.mcategory_code%TYPE;
-    v_expiry_date DATE;
-    v_detail_cnt NUMBER;
-BEGIN
-    IF :OLD.order_status != '완료' AND :NEW.order_status = '완료' THEN
-        
-        SELECT COUNT(*) 
-        INTO v_detail_cnt
-        FROM tbl_order_detail
-        WHERE order_id = :NEW.order_id;
-
-        IF v_detail_cnt = 0 THEN
-            RAISE_APPLICATION_ERROR(-20030, '발주 상세 내역이 없습니다. 빈 발주서는 완료할 수 없습니다.');
-        END IF;
-        
-        FOR item IN(
-            SELECT product_code, qty
-            FROM tbl_order_detail
-            WHERE order_id = :NEW.order_id
-        )
-        LOOP
-            MERGE INTO tbl_stock t
-            USING DUAL
-                ON (t.product_code = item.product_code)
-            WHEN MATCHED THEN
-                UPDATE SET t.stock_qty = t.stock_qty + item.qty
-            WHEN NOT MATCHED THEN
-                INSERT (stock_seq, product_code, stock_qty)
-                VALUES (seq_stock_seq.NEXTVAL, item.product_code, item.qty);
-            
-            -- 재고 순번 조회
-            SELECT stock_seq INTO v_stock_seq
-            FROM tbl_stock
-            WHERE product_code = item.product_code;
-            
-            -- 상품의 중분류 조회
-            SELECT m.mcategory_code INTO v_mcategory_code
-            FROM tbl_product p
-                JOIN tbl_scategory s ON p.scategory_code = s.scategory_code
-                JOIN tbl_mcategory m ON s.mcategory_code = m.mcategory_code
-            WHERE p.product_code = item.product_code;
-            
-            -- 중분류별 유통기한 계산
-            v_expiry_date :=
-                CASE v_mcategory_code
-                    -- 과자 
-                    WHEN 'MC01' THEN SYSDATE + 180
-                    -- 음료
-                    WHEN 'MC02' THEN SYSDATE + 300
-                    -- 라면
-                    WHEN 'MC03' THEN SYSDATE + 240
-                    -- 유제품
-                    WHEN 'MC04' THEN SYSDATE + 14
-                    -- 냉동식품
-                    WHEN 'MC05' THEN SYSDATE + 365
-                    -- 세제, 욕실용품, 주방용품, 문구, 생활잡화
-                    ELSE NULL
-                END;
-                
-            -- 재고 상세 등록
-            INSERT INTO tbl_stock_detail (
-                stock_detail_code, 
-                stock_date, 
-                stock_type, 
-                qty, 
-                bigo, 
-                expiry_date, 
-                staff_id, 
-                stock_seq, 
-                product_code
-            ) VALUES (
-                    'SD' || seq_stock_detail_code.NEXTVAL,
-                    SYSDATE,                               
-                    '발주입고',
-                    item.qty,
-                    '발주번호: ' || :NEW.order_id || ' 입고완료',
-                    v_expiry_date,  
-                    :NEW.staff_id,
-                    v_stock_seq,
-                    item.product_code
-            );
-            END LOOP;
-        END IF;
-EXCEPTION
-   WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20100, '데이터 처리 중 필수 정보(재고순번/분류 등)를 찾을 수 없습니다.'); 
-END;
-
-
--- 폐기
-
--- 폐기 테이블, 폐기 상세 테이블 프로시저 생성
--- 각각 테이블 pk 시퀀스 필요
--- 폐기 테이블 pk 시퀀스
-DECLARE
-    v_max NUMBER;
-BEGIN
-    SELECT NVL(MAX(discard_id), 0) + 1 INTO v_max FROM tbl_discard;
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_discard START WITH ' || v_max || ' INCREMENT BY 1';
-END;
-
--- 폐기 상세 테이블 pk 시퀀스
-DECLARE
-    v_max NUMBER;
-BEGIN
-    SELECT NVL(MAX(TO_NUMBER(SUBSTR(discard_detail_code, 3))), 0) + 1 INTO v_max FROM tbl_discard_detail;
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_discard_detail START WITH ' || v_max || ' INCREMENT BY 1';
-END;
-
-SELECT * FROM tbl_discard;
-
--- 폐기 테이블 프로시저
-CREATE OR REPLACE PROCEDURE up_create_discard
-(
-    p_staff_id IN VARCHAR2,
-    p_discard_id OUT NUMBER
-)
-IS
-    v_staff_cnt NUMBER;
-    v_discard_id NUMBER;
-BEGIN
-    
-    SELECT COUNT(*)
-    INTO v_staff_cnt
-    FROM tbl_staff
-    WHERE staff_id = p_staff_id;
-    
-    IF v_staff_cnt = 0 THEN
-        RAISE_APPLICATION_ERROR(-20010, '존재하지 않는 직원입니다.');
-        RETURN;
-    END IF;
-    
-    v_discard_id := seq_discard.NEXTVAL;
-    
-    INSERT INTO tbl_discard(discard_id, discard_date, staff_id)
-    VALUES (v_discard_id, SYSDATE, p_staff_id);
-    
-    p_discard_id := v_discard_id;
-    DBMS_OUTPUT.PUT_LINE('폐기번호: ' || v_discard_id || ' 생성완료');
-
-END;
-
-SELECT * FROM tbl_discard_detail;
-
-
--- 폐기 상세 (상품) 추가 프로시저
-CREATE OR REPLACE PROCEDURE up_add_discard_detail
-(
-    p_discard_id   IN NUMBER,
-    p_product_code IN VARCHAR2,
-    p_discard_qty  IN NUMBER
-)
-IS
-    v_detail_code VARCHAR2(30);
-    v_stock_cnt   NUMBER;
-    v_current_qty NUMBER;
-    v_discard_cnt NUMBER;
-BEGIN
-    SELECT COUNT(*) 
-    INTO v_stock_cnt
-    FROM tbl_stock
-    WHERE product_code = p_product_code;
-    
-    -- 폐기 수량 1개 이상인지 확인
-    IF p_discard_qty <= 0 THEN
-        RAISE_APPLICATION_ERROR(-20020, '폐기 수량은 1개 이상이어야 합니다.');
-    END IF;
-    
-    -- 폐기 번호가 진짜 존재 하는지
-    SELECT COUNT(*)
-    INTO v_discard_cnt
-    FROM tbl_discard
-    WHERE discard_id = p_discard_id;
-    
-    IF v_discard_cnt = 0 THEN
-        RAISE_APPLICATION_ERROR(-20021, '존재하지 않는 폐기 영수증 번호입니다.');
-    END IF;
-    
-    -- 폐기 상품 존재 여부 확인
-    IF v_stock_cnt = 0 THEN
-        RAISE_APPLICATION_ERROR(-20011, '창고에 존재하지 않는 상품입니다. (폐기 불가)');
-    END IF;
-    
-    -- 재고 수량 확인
-    SELECT stock_qty 
-    INTO v_current_qty
-    FROM tbl_stock
-    WHERE product_code = p_product_code
-    FOR UPDATE;
-    
-    IF v_current_qty < p_discard_qty THEN
-        RAISE_APPLICATION_ERROR(-20012, '재고 부족! 현재 재고(' || v_current_qty || '개)보다 많이 폐기할 수 없습니다.');
-    END IF;
-    
-    v_detail_code := 'DI' || LPAD(seq_discard_detail.NEXTVAL,3,'0');
-
-    INSERT INTO tbl_discard_detail (discard_detail_code, discard_id, product_code, discard_qty)
-    VALUES (v_detail_code, p_discard_id, p_product_code, p_discard_qty);
-
-    DBMS_OUTPUT.PUT_LINE('폐기상품 추가: ' || p_product_code || ' / 수량: ' || p_discard_qty);
-END;
-
--- 폐기 트리거
--- 폐기 상세에 insert 가 되는 순간 트리거가 발동
--- 재고 테이블에 재고수량 update
--- 재고상세 테이블에 기록 insert
-
-CREATE OR REPLACE TRIGGER ut_discard_outbound AFTER
-INSERT ON tbl_discard_detail
-FOR EACH ROW
-DECLARE
-    v_stock_seq NUMBER;
-    v_staff_id  VARCHAR2(30);
-BEGIN
-    UPDATE tbl_stock
-    SET stock_qty = stock_qty - :NEW.discard_qty
-    WHERE product_code = :NEW.product_code;
-    
-    SELECT stock_seq INTO v_stock_seq
-    FROM tbl_stock
-    WHERE product_code = :NEW.product_code;
-    
-    SELECT staff_id INTO v_staff_id
-    FROM tbl_discard
-    WHERE discard_id = :NEW.discard_id;
-
-    INSERT INTO tbl_stock_detail (
-        stock_detail_code, 
-        stock_date, 
-        stock_type, 
-        qty, 
-        bigo, 
-        expiry_date, 
-        staff_id, 
-        stock_seq, 
-        product_code
-    ) VALUES (
-        'SD' || seq_stock_detail_code.NEXTVAL,
-        SYSDATE,
-        '폐기출고',
-        :NEW.discard_qty,
-        '폐기번호 ' || :NEW.discard_id || ' 처리완료',
-        NULL,
-        v_staff_id,
-        v_stock_seq, 
-        :NEW.product_code
-    );
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20101, '폐기 이력 기록 중 필수 데이터(재고/직원)를 찾을 수 없습니다.');
-END;
-
--- 정빈 끝
-
-select * from tbl_order_detail;
-select * from tbl_order;
-update tbl_order
-set order_status = '완료'
-where order_id = 'OR65';
-
-select * from tbl_stock;
-desc tbl_stock_detail;
-
-
-
-SELECT *
-FROM tbl_stock_detail;
 -- 미성 시작
 -- 5. 현재재고 확인(select,) 상품 상세 정보
 CREATE OR REPLACE VIEW v_detail_stock AS

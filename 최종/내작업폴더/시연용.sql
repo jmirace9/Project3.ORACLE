@@ -120,6 +120,24 @@ SALE_DETAIL ,QTY ,PRICE,DISCOUNT 전부 음수로 출력.
 커서를 활용하면 결제영수증(양수로 상품금액들)이 환불영수증에도 같이 붙어서나와서
 구분하는 의미를 위해 커서를 지우고 FOR SELECT 활용.
 ------------------------------------------------------------------
+select * from tbl_sale_DETAIL;
+ALTER TABLE TBL_SALE ADD TOTAL_QTY NUMBER DEFAULT 0 NOT NULL;
+ALTER TABLE TBL_SALE ADD TOTAL_AMT NUMBER DEFAULT 0 NOT NULL;
+
+
+SELECT
+    PRODUCT_CODE,
+    QTY,
+    PRICE,
+    QTY * PRICE AS TOTAL_PRICE,
+    STATUS
+FROM TBL_SALE_DETAIL
+WHERE SALE_ID = 'SA004';
+
+select *
+from tbl_sale_detail;
+------------------------------------------------------------------
+
 
 EXEC UP_RECEIPT('SA002');
 EXEC UP_RECEIPT('SA003');
